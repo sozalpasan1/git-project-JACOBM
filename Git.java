@@ -11,64 +11,43 @@ import java.util.zip.ZipOutputStream;
 import java.io.ByteArrayOutputStream;
 public class Git
 {
-    public static void main (String [] args)
+    public static void main (String [] args) throws IOException
     {
+        final boolean COMPRESS = false;
         initializesGitRepo();
-        System.out.println("Git Repository Initialized");
-        Git git = new Git();
-        hash = null;
-        try 
-        {
-            hash = git.putFileToObjectsFolder();
-            System.out.println("File added to objects folder " + hash);
-        } 
-        catch (IOException e) 
-        {
-            e.printStackTrace();
-        }
-        if (hash != null)
-        {
-            File objectFile = new File ("git/objects/" + hash);
-            if (objectFile.exists())
-            {
-                System.out.println("File added to the  objects folder");
-            }
-            else
-            {
-                System.out.println("File not found in the objects folder");
-            }
-        }
-        try {
-            git.putFileToIndex(hash, "plainTextFile.txt");
-            System.out.println("File added to the index");
-        } 
-        catch (IOException e) 
-        {
-            e.printStackTrace();
-        }
-        File index = new File ("git/index");
-        try 
-        {
-            String insideIndex = new String (Files.readAllBytes(index.toPath()));
-            if (insideIndex.contains (hash + " plainTextFile.txt"))
-            {
-                System.out.println("File added to the index");
-            }
-            else
-            {
-                System.out.println("File not found in the index");
-            }
-        } 
-        catch (IOException e) 
-        {
-            e.printStackTrace();
-        }
-        checkForAndDelete(gitDirectory);
-        System.out.println ("Deleted");
+
+        File testFile = new File("test.txt");
+        checkForAndDelete(testFile);
+        testFile.createNewFile();
+        File testFile2 = new File("redundantTest.txt");
+        checkForAndDelete(testFile2);
+        testFile2.createNewFile();
+        File testDir = new File("testDir");
+        checkForAndDelete(testDir);
+        testDir.mkdir();
+        File testFileInDir = new File("testDir/test2.txt");
+        checkForAndDelete(testFileInDir);
+        testFileInDir.createNewFile();
+
+        FileWriter writer = new FileWriter("test.txt");
+        writer.write("this is the first test");
+        writer.close();
+        FileWriter writerInDir = new FileWriter("testDir/test2.txt");
+        writerInDir.write("this is the second test");
+        writerInDir.close();
+        FileWriter redundantWriter = new FileWriter("redundantTest.txt");
+        redundantWriter.write("this is a redundant test");
+        redundantWriter.close();
+        
+        createTree("testDir", COMPRESS);
+        createBlob("test.txt", COMPRESS);
+        createBlob("redundantTest.txt", COMPRESS);
     }
+
+
     private static File gitDirectory = new File("git");
     private static String hash;
-    private static boolean compression = true;
+    
     public static void initializesGitRepo ()
     {
         //create gitDirectory
@@ -76,25 +55,9 @@ public class Git
         if (!gitDirectory.exists()) 
         {
             gitDirectory.mkdir();
-        }
-        else
-        {
-            System.out.println ("Git Repository already exists");
-        }
-        //create objects inside gitDirectory
-        File objects = new File("git/objects");
-        if (!objects.exists())
-        {
+            File objects = new File("git/objects");
+            File index = new File("git/index");
             objects.mkdir();
-        }
-        else
-        {
-            System.out.println ("Git Repository already exists");
-        }
-        //creating index file
-        File index = new File("git/index");
-        if (!index.exists())
-        {
             try 
             {
                 index.createNewFile();
@@ -105,7 +68,28 @@ public class Git
         }
         else
         {
-            System.out.println ("Git Repository already exists");
+            //create objects inside gitDirectory
+            File objects = new File("git/objects");
+            boolean objectsExists = objects.exists();
+            if (!objectsExists)
+            {
+                objects.mkdir();
+            }
+            File index = new File("git/index"); //create index inside gitDirectory
+            if(!index.exists())
+            {
+                try 
+                {
+                    index.createNewFile();
+                } catch (IOException e) 
+                {
+                    e.printStackTrace();
+                }
+            }
+            else if (objectsExists)
+            {
+                System.out.println ("Git Repository already exists");
+            }
         }
     }
     
@@ -120,8 +104,79 @@ public class Git
                 f.delete();
             }
         }
+        else{
+            file.delete();
+        }
     }
     
+    private static void createBlob(String pathName, boolean compressed) throws IOException
+    {
+        putFileToObjectsFolder(pathName, compressed);
+        putFileToIndex(pathName, compressed);
+
+    }
+
+    private static String createTree(String pathName, boolean compressed) throws IOException
+    {
+        File dir = new File(pathName);
+        if(dir.exists())
+        {
+            File[] contents = dir.listFiles();
+            System.out.println(contents.toString());
+            if(contents.length != 0)
+                {
+                    for(File f : contents)
+                    {
+                        if(f.isFile())
+                        {
+                            createBlob(pathName + "/" + f.getName(), compressed);
+                        }
+                        else if(f.isDirectory())
+                        {
+                            createTree(pathName + "/" + f.getName(), compressed);
+                        }
+                    }
+                }
+            putFileToIndex(pathName, compressed);
+        }
+        return getHash(pathName, compressed);
+    }
+
+    private static String getHash(String pathName, boolean compressed) throws IOException
+    {
+        File regularFile = new File (pathName);
+        byte[] fileContentInBytes = {};
+        if(regularFile.isFile())
+        {
+            fileContentInBytes = Files.readAllBytes(regularFile.toPath());
+        }
+        else if(regularFile.isDirectory()){
+            File[] contents = regularFile.listFiles();
+            String contentsString = "";
+            if(contents.length != 0)
+            {
+                for(File f : contents)
+                {
+                    contentsString += f.getName() + " ";
+                }
+                contentsString = contentsString.substring(0, contentsString.length() - 1);
+            }
+            fileContentInBytes = contentsString.getBytes();
+        }
+        byte [] hashData = null;
+        if (compressed)
+        {
+            hashData = zipBytes(regularFile.getName(), fileContentInBytes);
+        }
+        else
+        {
+            hashData = fileContentInBytes;
+        }
+        //reads the contents of the file into the byte array and then  we can generate the hash by using our encryptString method
+        hash = encryptThisString(new String (hashData));
+        return hash;
+    }
+
     public static String encryptThisString(String input) {
         try {
             // getInstance() method is called with algorithm SHA-1
@@ -153,16 +208,37 @@ public class Git
         }
     }
     
-    public String putFileToObjectsFolder()throws IOException
+    public static String putFileToObjectsFolder(String pathName, boolean compressed) throws IOException
     {
-        File regularFile = new File ("plainTextFile.txt");
-        try (FileWriter writer2 = new FileWriter (regularFile))
+        File regularFile = new File (pathName);
+        byte[] fileContentInBytes = {};
+        if(regularFile.isFile())
         {
-            writer2.write("top secret data");
+            fileContentInBytes = Files.readAllBytes(regularFile.toPath());
         }
-        byte[] fileContentInBytes = Files.readAllBytes(regularFile.toPath());
+        else if(regularFile.isDirectory()){
+            File[] contents = regularFile.listFiles();
+            String contentsString = "";
+            if(contents.length != 0)
+            {
+                for(File f : contents)
+                {
+                    contentsString += f.getName() + " ";
+                    if(f.isFile())
+                    {
+                        tree += "blob " + getHash(f.getPath(), compressed) + " " + f.getName() + "\n";
+                    }
+                    else{
+                        tree += "tree " + getHash(f.getPath(), compressed) + " " + f.getName() + "\n";
+                    }
+                }
+                contentsString = contentsString.substring(0, contentsString.length() - 1);
+            }
+            fileContentInBytes = contentsString.getBytes();
+        }
+
         byte [] hashData = null;
-        if (compression)
+        if (compressed)
         {
             hashData = zipBytes(regularFile.getName(), fileContentInBytes);
         }
@@ -171,32 +247,41 @@ public class Git
             hashData = fileContentInBytes;
         }
         //reads the contents of the file into the byte array and then  we can generate the hash by using our encryptString method
-        String fileContent = new String (Files.readAllBytes(regularFile.toPath()));
         hash = encryptThisString(new String (hashData));
-        File objects = new File ("git/objects");
-        if (!objects.exists())
-        {
-            objects.mkdir();
-        }
         File objectFile = new File ("git/objects/" + hash);
         //Writes out bytes better
         try (FileOutputStream writer = new FileOutputStream (objectFile))
         {
             writer.write(hashData);
-
+        }
+        catch (IOException e){
+            e.printStackTrace();
         }
         return hash;
     }
 
-    public void putFileToIndex(String hash, String filename)throws IOException
+    public static void putFileToIndex(String pathName, boolean compressed) throws IOException
     {
+        hash = getHash(pathName, compressed);
         File index = new File ("git/index");
+        File file = new File(pathName);
+        if(file.isFile()){
         //this append mode is used so that we can add to an existing file without altering the og data
-        try (FileWriter writer = new FileWriter (index, true))
-        {
-            writer.write(hash + " " + filename + "\n");
+            try (FileWriter writer = new FileWriter (index, true))
+            {
+            writer.write("blob " + hash + " " + pathName + "\n");
+            } catch (IOException e){
+                e.printStackTrace();
+            }  
         }
-        
+        else{ //if its a directory
+            try (FileWriter writer = new FileWriter (index, true))
+            {
+            writer.write("tree " + hash + " " + pathName + "\n");
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+        }
     }
 
     public static byte[] zipBytes(String filename, byte[] input) throws IOException {
@@ -210,6 +295,5 @@ public class Git
         zos.close();
         return baos.toByteArray();
     }
-}  
 
-
+}
