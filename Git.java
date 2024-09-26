@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 public class Git
 {
     public static void main (String [] args) throws IOException
@@ -25,9 +26,15 @@ public class Git
         File testDir = new File("testDir");
         checkForAndDelete(testDir);
         testDir.mkdir();
+        File dirInsideDir = new File("testDir/dirInsideDir");
+        checkForAndDelete(dirInsideDir);
+        dirInsideDir.mkdir();
         File testFileInDir = new File("testDir/test2.txt");
         checkForAndDelete(testFileInDir);
         testFileInDir.createNewFile();
+        File lastFile = new File("testDir/dirInsideDir/theLastFile.txt");
+        checkForAndDelete(lastFile);
+        lastFile.createNewFile();
 
         FileWriter writer = new FileWriter("test.txt");
         writer.write("this is the first test");
@@ -38,6 +45,9 @@ public class Git
         FileWriter redundantWriter = new FileWriter("redundantTest.txt");
         redundantWriter.write("this is a redundant test");
         redundantWriter.close();
+        FileWriter lastWriter = new FileWriter("testDir/dirInsideDir/theLastFile.txt");
+        lastWriter.write("hopefully this works");
+        lastWriter.close();
         
         createTree("testDir", COMPRESS);
         createBlob("test.txt", COMPRESS);
@@ -122,22 +132,28 @@ public class Git
         if(dir.exists())
         {
             File[] contents = dir.listFiles();
-            System.out.println(contents.toString());
+            putFileToObjectsFolder(pathName, compressed);
             if(contents.length != 0)
                 {
                     for(File f : contents)
                     {
-                        if(f.isFile())
+                        if(f.getName().charAt(0) != '.')
                         {
-                            createBlob(pathName + "/" + f.getName(), compressed);
-                        }
-                        else if(f.isDirectory())
-                        {
-                            createTree(pathName + "/" + f.getName(), compressed);
+                            if(f.isFile())
+                            {
+                                createBlob(pathName + "/" + f.getName(), compressed);
+                            }
+                            else if(f.isDirectory())
+                            {
+                                createTree(pathName + "/" + f.getName(), compressed);
+                            }
                         }
                     }
                 }
             putFileToIndex(pathName, compressed);
+        }
+        else{
+            throw new FileNotFoundException("Directory named " + pathName + " not found.");
         }
         return getHash(pathName, compressed);
     }
@@ -152,16 +168,19 @@ public class Git
         }
         else if(regularFile.isDirectory()){
             File[] contents = regularFile.listFiles();
-            String contentsString = "";
+            String tree = "";
             if(contents.length != 0)
             {
                 for(File f : contents)
                 {
-                    contentsString += f.getName() + " ";
+                    if(f.getName().charAt(0) != '.')
+                    {
+                        tree += f.getName() + " ";
+                    }
                 }
-                contentsString = contentsString.substring(0, contentsString.length() - 1);
+                tree = tree.substring(0, tree.length() - 1);
             }
-            fileContentInBytes = contentsString.getBytes();
+            fileContentInBytes = tree.getBytes();
         }
         byte [] hashData = null;
         if (compressed)
@@ -218,25 +237,20 @@ public class Git
         }
         else if(regularFile.isDirectory()){
             File[] contents = regularFile.listFiles();
-            String contentsString = "";
+            String tree = "";
             if(contents.length != 0)
             {
                 for(File f : contents)
                 {
-                    contentsString += f.getName() + " ";
-                    if(f.isFile())
+                    if(f.getName().charAt(0) != '.')
                     {
-                        tree += "blob " + getHash(f.getPath(), compressed) + " " + f.getName() + "\n";
-                    }
-                    else{
-                        tree += "tree " + getHash(f.getPath(), compressed) + " " + f.getName() + "\n";
+                        tree += getIndexText(getHash(f.getPath(), compressed), f.getPath());
                     }
                 }
-                contentsString = contentsString.substring(0, contentsString.length() - 1);
+                tree = tree.substring(0, tree.length() - 1);
             }
-            fileContentInBytes = contentsString.getBytes();
+            fileContentInBytes = tree.getBytes();
         }
-
         byte [] hashData = null;
         if (compressed)
         {
@@ -282,6 +296,19 @@ public class Git
                 e.printStackTrace();
             }
         }
+    }
+
+    public static String getIndexText(String hash, String pathName)
+    {
+        File file = new File(pathName);
+        String indexText = "";
+        if(file.isFile()){
+            indexText += "blob " + hash + " " + file.getName() + "\n";
+        }
+        else{ //if its a directory
+            indexText += "tree " + hash + " " + file.getName() + "\n";
+        }
+        return indexText;
     }
 
     public static byte[] zipBytes(String filename, byte[] input) throws IOException {
