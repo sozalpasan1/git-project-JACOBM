@@ -10,6 +10,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+//added a sigma comment
 public class Git
 {
     public static void main (String [] args) throws IOException
