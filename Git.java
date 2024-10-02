@@ -11,8 +11,7 @@ import java.util.zip.ZipOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 //added a sigma comment
-public class Git
-{
+public class Git implements GitInterface{
     public static void main (String [] args) throws IOException
     {
         final boolean COMPRESS = false;
@@ -55,9 +54,20 @@ public class Git
         createBlob("redundantTest.txt", COMPRESS);
     }
 
-
     private static File gitDirectory = new File("git");
     private static String hash;
+
+    public void stage(String filePath){
+
+    }
+
+    public String commit(String author, String message){
+        return null;
+    }
+
+    public void checkout(String commitHash){
+        
+    }
     
     public static void initializesGitRepo ()
     {
