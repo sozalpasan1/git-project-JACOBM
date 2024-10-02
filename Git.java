@@ -20,9 +20,6 @@ public class Git implements GitInterface{
         File testFile = new File("test.txt");
         checkForAndDelete(testFile);
         testFile.createNewFile();
-        File testFile2 = new File("redundantTest.txt");
-        checkForAndDelete(testFile2);
-        testFile2.createNewFile();
         File testDir = new File("testDir");
         checkForAndDelete(testDir);
         testDir.mkdir();
@@ -42,16 +39,12 @@ public class Git implements GitInterface{
         FileWriter writerInDir = new FileWriter("testDir/test2.txt");
         writerInDir.write("this is the second test");
         writerInDir.close();
-        FileWriter redundantWriter = new FileWriter("redundantTest.txt");
-        redundantWriter.write("this is a redundant test");
-        redundantWriter.close();
         FileWriter lastWriter = new FileWriter("testDir/dirInsideDir/theLastFile.txt");
         lastWriter.write("hopefully this works");
         lastWriter.close();
         
-        createTree("testDir", COMPRESS);
+        createBlob("testDir", COMPRESS);
         createBlob("test.txt", COMPRESS);
-        createBlob("redundantTest.txt", COMPRESS);
     }
 
     private static File gitDirectory = new File("git");
@@ -132,8 +125,14 @@ public class Git implements GitInterface{
     
     private static void createBlob(String pathName, boolean compressed) throws IOException
     {
-        putFileToObjectsFolder(pathName, compressed);
-        putFileToIndex(pathName, compressed);
+        File file = new File(pathName);
+        if(file.isDirectory()){
+            createTree(pathName, compressed);
+        } else {
+            putFileToObjectsFolder(pathName, compressed);
+            putFileToIndex(pathName, compressed);
+        }
+        
 
     }
 
@@ -238,7 +237,7 @@ public class Git implements GitInterface{
         }
     }
     
-    public static String putFileToObjectsFolder(String pathName, boolean compressed) throws IOException
+    public static void putFileToObjectsFolder(String pathName, boolean compressed) throws IOException
     {
         File regularFile = new File (pathName);
         byte[] fileContentInBytes = {};
@@ -282,7 +281,7 @@ public class Git implements GitInterface{
         catch (IOException e){
             e.printStackTrace();
         }
-        return hash;
+        // return hash;
     }
 
     public static void putFileToIndex(String pathName, boolean compressed) throws IOException
