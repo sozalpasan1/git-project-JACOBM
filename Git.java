@@ -14,7 +14,8 @@ import java.io.FileNotFoundException;
 public class Git implements GitInterface{
     public static void main (String [] args) throws IOException
     {
-        final boolean COMPRESS = false;
+        Git repo = new Git();
+        //final boolean COMPRESS = false;
         initializesGitRepo();
 
         File testFile = new File("test.txt");
@@ -43,18 +44,33 @@ public class Git implements GitInterface{
         lastWriter.write("hopefully this works");
         lastWriter.close();
         
-        createBlob("testDir", COMPRESS);
-        createBlob("test.txt", COMPRESS);
+        // createBlob("testDir", COMPRESS);
+        // createBlob("test.txt", COMPRESS);
+        repo.stage("testDir");
+        //add scanner for author and message before doing commit
+
+
     }
 
     private static File gitDirectory = new File("git");
     private static String hash;
 
     public void stage(String filePath){
-
+        try{
+            createBlob(filePath, false);
+        } catch (IOException e){
+            e.printStackTrace();
+        }
     }
 
     public String commit(String author, String message){
+        StringBuilder commitFileContents = new StringBuilder();
+        // try (FileWriter writer = new FileWriter("git/HEAD", true)) {
+        //     writer.write();
+        // } catch (IOException e) {
+        //     e.printStackTrace();
+        // }
+
         return null;
     }
 
@@ -72,9 +88,11 @@ public class Git implements GitInterface{
             File objects = new File("git/objects");
             File index = new File("git/index");
             objects.mkdir();
+            final File HEAD = new File("git/HEAD");
             try 
             {
                 index.createNewFile();
+                HEAD.createNewFile();
             } catch (IOException e) 
             {
                 e.printStackTrace();
@@ -123,7 +141,7 @@ public class Git implements GitInterface{
         }
     }
     
-    private static void createBlob(String pathName, boolean compressed) throws IOException
+    private void createBlob(String pathName, boolean compressed) throws IOException
     {
         File file = new File(pathName);
         if(file.isDirectory()){
@@ -136,7 +154,7 @@ public class Git implements GitInterface{
 
     }
 
-    private static String createTree(String pathName, boolean compressed) throws IOException
+    private String createTree(String pathName, boolean compressed) throws IOException
     {
         File dir = new File(pathName);
         if(dir.exists())
