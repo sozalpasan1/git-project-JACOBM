@@ -144,7 +144,7 @@ public class Git implements GitInterface{
             File[] contents = dir.listFiles();
             putFileToObjectsFolder(pathName, compressed);
             if(contents.length != 0)
-                {
+            {
                     for(File f : contents)
                     {
                         if(f.getName().charAt(0) != '.')
@@ -159,7 +159,7 @@ public class Git implements GitInterface{
                             }
                         }
                     }
-                }
+            }
             putFileToIndex(pathName, compressed);
         }
         else{
@@ -185,7 +185,7 @@ public class Git implements GitInterface{
                 {
                     if(f.getName().charAt(0) != '.')
                     {
-                        tree += f.getName() + " ";
+                        tree += getIndexText(getHash(f.getPath(), compressed), f.getPath());
                     }
                 }
                 tree = tree.substring(0, tree.length() - 1);
@@ -313,10 +313,10 @@ public class Git implements GitInterface{
         File file = new File(pathName);
         String indexText = "";
         if(file.isFile()){
-            indexText += "blob " + hash + " " + file.getName() + "\n";
+            indexText += "blob " + hash + " " + file.getPath() + "\n";
         }
         else{ //if its a directory
-            indexText += "tree " + hash + " " + file.getName() + "\n";
+            indexText += "tree " + hash + " " + file.getPath() + "\n";
         }
         return indexText;
     }
