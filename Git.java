@@ -36,14 +36,14 @@ public class Git implements GitInterface{
          */
 
         
-        workingDirectoryName = "wordir"; //!!! create your working director and type in its name here
+        workingDirectoryName = "wordir"; //!!! create your working director and type its name here
         Git repo = new Git();
         initializesGitRepo();
         
         repo.stage("README.md");    
         repo.commit("sean", "first sigma");
 
-        repo.stage(workingDirectoryName + "/test.txt");
+        repo.stage(workingDirectoryName + "/testDir");
         repo.commit("sean", "test");
 
         repo.stage(workingDirectoryName + "/test.txt");
