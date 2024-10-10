@@ -18,6 +18,6 @@
 <br/>
 
 4. What bugs did find / which of em did you fix? <br/>
-    Jacob and I found a bug where the part 2 wasnt fully working
+    Jacob and I found a bug where the part 2 wasnt fully working. <br/>
     The hashes for trees in index werent completely correct,
     but we found the bug and fixed it in 20 min in class
