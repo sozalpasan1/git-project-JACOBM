@@ -164,11 +164,16 @@ public class Git implements GitInterface{
             }
             return thisIsTheTreeFileHash;
         } else {
-            try(BufferedReader reader = new BufferedReader(new FileReader("git/objects/" + parentLine))) {
-                String oneParentLine;
-                while((oneParentLine = reader.readLine()) != null) {
-                    treeHashLineForCommit.append(oneParentLine);
-                    treeHashLineForCommit.append("\n");
+            try(BufferedReader reader = new BufferedReader(new FileReader("git/objects/" + parentLine))) { //need to go into this ones tree
+                String getTheTreeOfParent = "";
+                getTheTreeOfParent = reader.readLine();
+                getTheTreeOfParent = getTheTreeOfParent.substring(6);
+                try(BufferedReader treeReader = new BufferedReader(new FileReader("git/objects/" + getTheTreeOfParent))){
+                    String oneTreeOfParentLine;
+                    while((oneTreeOfParentLine = reader.readLine()) != null) {
+                        treeHashLineForCommit.append(oneTreeOfParentLine);
+                        treeHashLineForCommit.append("\n");
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
