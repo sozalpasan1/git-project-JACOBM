@@ -51,8 +51,11 @@ public class Git implements GitInterface{
         // createBlob("testDir", COMPRESS);
         // createBlob("test.txt", COMPRESS);
         repo.stage("testDir");
+
+        System.out.println(repo.makeTreeHashLineForCommit());
+        //repo.stage("test.txt");
         //add scanner for author and message before doing commit
-        repo.commit("sean", "sigma");
+        //repo.commit("sean", "sigma");
 
 
     }
@@ -71,9 +74,11 @@ public class Git implements GitInterface{
     public String commit(String author, String message){
         StringBuilder commitFileContents = new StringBuilder();
         
+        String treeHashLineForCommit = makeTreeHashLineForCommit();
+        commitFileContents.append("tree: " + treeHashLineForCommit);
+        commitFileContents.append("\n");
 
-        
-        
+
         try(BufferedReader reader = new BufferedReader(new FileReader("git/HEAD"));) {
             String parentLine = "";
             while((reader.readLine()) != null) {
@@ -122,6 +127,39 @@ public class Git implements GitInterface{
 
     public void checkout(String commitHash){
         
+    }
+
+    //go to previous commit, get the tree hash, go to that file in objects, append everythign into treeHashLineForCommit, then append
+    //whats currently in index, hash that, put all the junk into a file that has the name of the hash, then return the hash
+
+    public String makeTreeHashLineForCommit(){
+        String parentLine = "";
+        StringBuilder treeHashLineForCommit = new StringBuilder();
+
+        try(BufferedReader reader = new BufferedReader(new FileReader("git/HEAD"))) {
+            while((reader.readLine()) != null) {
+                parentLine = reader.readLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+       
+        if(parentLine.equals("")){ //that means this is the first commit
+            try(BufferedReader reader = new BufferedReader(new FileReader("git/index"))) {
+                String oneIndexLine;
+                while((oneIndexLine = reader.readLine()) != null) {
+                    treeHashLineForCommit.append(oneIndexLine);
+                    treeHashLineForCommit.append("\n");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+
+        }
+
+
+        return treeHashLineForCommit.toString();
     }
     
     public static void initializesGitRepo ()
