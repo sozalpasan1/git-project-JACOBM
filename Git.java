@@ -154,12 +154,44 @@ public class Git implements GitInterface{
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            String thisIsTheTreeFileHash = encryptThisString(treeHashLineForCommit.toString());
+            File treeFile = new File("git/objects/" + thisIsTheTreeFileHash);
+            try (FileWriter writer = new FileWriter(treeFile, false)) {
+                writer.write(treeHashLineForCommit.toString());
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return thisIsTheTreeFileHash;
         } else {
-
+            try(BufferedReader reader = new BufferedReader(new FileReader("git/objects/" + parentLine))) {
+                String oneParentLine;
+                while((oneParentLine = reader.readLine()) != null) {
+                    treeHashLineForCommit.append(oneParentLine);
+                    treeHashLineForCommit.append("\n");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try(BufferedReader reader = new BufferedReader(new FileReader("git/index"))) {
+                String oneIndexLine;
+                while((oneIndexLine = reader.readLine()) != null) {
+                    treeHashLineForCommit.append(oneIndexLine);
+                    treeHashLineForCommit.append("\n");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            String thisIsTheTreeFileHash = encryptThisString(treeHashLineForCommit.toString());
+            File treeFile = new File("git/objects/" + thisIsTheTreeFileHash);
+            try (FileWriter writer = new FileWriter(treeFile, false)) {
+                writer.write(treeHashLineForCommit.toString());
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return thisIsTheTreeFileHash;
         }
-
-
-        return treeHashLineForCommit.toString();
     }
     
     public static void initializesGitRepo ()
