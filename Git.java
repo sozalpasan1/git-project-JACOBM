@@ -24,11 +24,14 @@ public class Git implements GitInterface{
         /*
          * !!! Super important
          * to test:
-         * 1) manually make a working directory, add whatever files or folders you want
+         * 1) manually make a working directory, add whatever files or folders you want inside of it
          * 2) initialize git repo
          * 3) first stage README.md
          * 4) stage any file/folder you want. You can stage as many things as you want, then commit.
+         * 4.5) when staging, the pathway is "workingdirectory/__whateverfileorfolder__"
          * 5) commit --> committing twice should will j make another commmit file thats tree is already existing
+         * 
+         * 
          */
 
         
@@ -38,11 +41,11 @@ public class Git implements GitInterface{
         repo.stage("README.md");    
         repo.commit("sean", "first sigma");
 
-        repo.stage("testDir");
-        repo.commit("sean", "sigma");
+        repo.stage("wordir/testDir");
+        repo.commit("sean", "test");
 
-        repo.stage("test.txt");
-        System.out.println(repo.commit("sean", "test"));
+        repo.stage("wordir/test.txt");
+        repo.commit("sean", "test");
 
     }
 
@@ -122,6 +125,16 @@ public class Git implements GitInterface{
 
     public void checkout(String commitHash){
         //change head to be the parameter
+        try (FileWriter writer = new FileWriter("git/HEAD", false)){
+            writer.write(commitHash);
+            writer.close();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+
+        
+
+        
         //then have to update owrking directory to be identical to the specificed hash
     }
 
@@ -135,7 +148,6 @@ public class Git implements GitInterface{
             while ((line = reader.readLine()) != null) {
                 parentLine = line;
             }
-            System.out.println(parentLine);
         } catch (IOException e) {
             e.printStackTrace();
         }
