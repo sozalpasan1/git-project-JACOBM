@@ -18,47 +18,19 @@ import java.time.format.DateTimeFormatter;
 public class Git implements GitInterface{
     public static void main (String [] args) throws IOException
     {
+        File file = new File("doNotPayThisAnyAttention");
+        checkForAndDelete(file);
+        
         Git repo = new Git();
-        // //final boolean COMPRESS = false;
         initializesGitRepo();
 
-        File testFile = new File("test.txt");
-        checkForAndDelete(testFile);
-        testFile.createNewFile();
-        File testDir = new File("testDir");
-        checkForAndDelete(testDir);
-        testDir.mkdir();
-        File dirInsideDir = new File("testDir/dirInsideDir");
-        checkForAndDelete(dirInsideDir);
-        dirInsideDir.mkdir();
-        File testFileInDir = new File("testDir/test2.txt");
-        checkForAndDelete(testFileInDir);
-        testFileInDir.createNewFile();
-        File lastFile = new File("testDir/dirInsideDir/theLastFile.txt");
-        checkForAndDelete(lastFile);
-        lastFile.createNewFile();
+        repo.commit("sean", "first sigma");
 
-        FileWriter writer = new FileWriter("test.txt");
-        writer.write("this is the first test");
-        writer.close();
-        FileWriter writerInDir = new FileWriter("testDir/test2.txt");
-        writerInDir.write("this is the second test");
-        writerInDir.close();
-        FileWriter lastWriter = new FileWriter("testDir/dirInsideDir/theLastFile.txt");
-        lastWriter.write("hopefully this works");
-        lastWriter.close();
-        
-        // createBlob("testDir", COMPRESS);
-        // createBlob("test.txt", COMPRESS);
         repo.stage("testDir");
         repo.commit("sean", "sigma");
 
         repo.stage("test.txt");
-        repo.commit("sean", "test.txt");
-
-        repo.stage("sigma.txt");
-        System.out.println(repo.commit("sean", "sigma.txt"));
-
+        System.out.println(repo.commit("sean", "test.txt"));
 
     }
 
@@ -254,19 +226,18 @@ public class Git implements GitInterface{
             }
         }
     }
-    
-    private static void checkForAndDelete(File file)
-    {
-        if (file.isDirectory())
-        {
+
+    private static void checkForAndDelete(File file){
+        if(!file.exists()){
+            return;
+        }
+        if (file.isDirectory()){
             File[] files = file.listFiles();
-            for (File f : files)
-            {
+            for (File f : files){
                 checkForAndDelete(f);
                 f.delete();
             }
-        }
-        else{
+        } else {
             file.delete();
         }
     }
@@ -274,6 +245,10 @@ public class Git implements GitInterface{
     private void createBlob(String pathName, boolean compressed) throws IOException
     {
         File file = new File(pathName);
+        if(!file.exists()){
+            throw new FileNotFoundException();
+        }
+        
         if(file.isDirectory()){
             createTree(pathName, compressed);
         } else {
