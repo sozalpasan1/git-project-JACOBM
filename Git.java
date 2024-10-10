@@ -19,7 +19,7 @@ public class Git implements GitInterface{
     public static void main (String [] args) throws IOException
     {
         Git repo = new Git();
-        //final boolean COMPRESS = false;
+        // //final boolean COMPRESS = false;
         initializesGitRepo();
 
         File testFile = new File("test.txt");
@@ -52,10 +52,14 @@ public class Git implements GitInterface{
         // createBlob("test.txt", COMPRESS);
         repo.stage("testDir");
 
-        System.out.println(repo.makeTreeHashLineForCommit());
-        //repo.stage("test.txt");
         //add scanner for author and message before doing commit
-        //repo.commit("sean", "sigma");
+        repo.commit("sean", "sigma");
+
+        repo.stage("test.txt");
+        repo.commit("sean", "test.txt");
+
+        repo.stage("sigma.txt");
+        repo.commit("sean", "sigma.txt");
 
 
     }
@@ -121,6 +125,11 @@ public class Git implements GitInterface{
         } catch (IOException e){
             e.printStackTrace();
         }
+        try (FileWriter writer = new FileWriter("git/index", false)){
+            writer.close();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
 
         return hashOfCommitFile;
     }
@@ -133,13 +142,14 @@ public class Git implements GitInterface{
     //whats currently in index, hash that, put all the junk into a file that has the name of the hash, then return the hash
 
     public String makeTreeHashLineForCommit(){
-        String parentLine = "";
         StringBuilder treeHashLineForCommit = new StringBuilder();
-
+        String parentLine = "";
         try(BufferedReader reader = new BufferedReader(new FileReader("git/HEAD"))) {
-            while((reader.readLine()) != null) {
-                parentLine = reader.readLine();
+            String line;
+            while ((line = reader.readLine()) != null) {
+                parentLine = line;
             }
+            System.out.println(parentLine);
         } catch (IOException e) {
             e.printStackTrace();
         }
