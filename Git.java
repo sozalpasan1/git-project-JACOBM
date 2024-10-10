@@ -52,9 +52,7 @@ public class Git implements GitInterface{
         // createBlob("test.txt", COMPRESS);
         repo.stage("testDir");
         //add scanner for author and message before doing commit
-        
-       
-        // System.out.println(formattedDate);
+        repo.commit("sean", "sigma");
 
 
     }
@@ -76,17 +74,17 @@ public class Git implements GitInterface{
 
         
         
-        try (BufferedReader reader = new BufferedReader(new FileReader("git/HEAD"))) {
-            String line;
-            if((line = reader.readLine()) != null) {
-                commitFileContents.append("parent: " + line);
-                commitFileContents.append("\n");
-                reader.close();
+        try(BufferedReader reader = new BufferedReader(new FileReader("git/HEAD"));) {
+            String parentLine = "";
+            while((reader.readLine()) != null) {
+                parentLine = reader.readLine();
             }
+            commitFileContents.append("parent: " + parentLine);
+            commitFileContents.append("\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        
         //add author
         commitFileContents.append("author: " + author);
         commitFileContents.append("\n");
@@ -118,7 +116,6 @@ public class Git implements GitInterface{
         } catch (IOException e){
             e.printStackTrace();
         }
-
 
         return hashOfCommitFile;
     }
