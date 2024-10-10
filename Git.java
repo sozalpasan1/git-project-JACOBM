@@ -6,8 +6,10 @@ import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 //added a sigma comment
@@ -65,11 +67,17 @@ public class Git implements GitInterface{
 
     public String commit(String author, String message){
         StringBuilder commitFileContents = new StringBuilder();
-        // try (FileWriter writer = new FileWriter("git/HEAD", true)) {
-        //     writer.write();
-        // } catch (IOException e) {
-        //     e.printStackTrace();
-        // }
+        try (BufferedReader reader = new BufferedReader(new FileReader("git/HEAD"))) {
+            String line;
+            if((line = reader.readLine()) != null) {
+                commitFileContents.append(line);
+                reader.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        
 
         return null;
     }
