@@ -43,7 +43,7 @@ public class Git implements GitInterface{
         repo.stage("README.md");    
         repo.commit("sean", "first sigma");
 
-        repo.stage(workingDirectoryName + "/testDir");
+        repo.stage(workingDirectoryName + "/test.txt");
         repo.commit("sean", "test");
 
         repo.stage(workingDirectoryName + "/test.txt");
@@ -133,9 +133,17 @@ public class Git implements GitInterface{
         } catch (IOException e){
             e.printStackTrace();
         }
-
-        //go into commitHash, get the tree file
-        //using treeFile, delete everything thats NOT in the tree
+        //go into commitHash, get the tree hash
+        String getTheTreeOfParent = "";
+        try(BufferedReader reader = new BufferedReader(new FileReader("git/objects/" + commitHash))) {
+            getTheTreeOfParent = reader.readLine();
+            getTheTreeOfParent = getTheTreeOfParent.substring(6);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        
+        //using treeFile, delete everything thats NOT in the tree <-- this only works if we checkout backwards only
 
         
         //then have to update owrking directory to be identical to the specificed hash
@@ -156,30 +164,9 @@ public class Git implements GitInterface{
         }
        
         //BELOW
-        //if statement --> if head empty, just hash index, else go to previous commits tree and continute
+        //if statement --> if head NOT empty, get prev commits tree. if empty then j hash index
         StringBuilder treeHashLineForCommit = new StringBuilder();
-        if(parentLine.equals("")){ //that means this is the first commit
-            //got everything from index
-            try(BufferedReader reader = new BufferedReader(new FileReader("git/index"))) {
-                String oneIndexLine;
-                while((oneIndexLine = reader.readLine()) != null) {
-                    treeHashLineForCommit.append(oneIndexLine);
-                    treeHashLineForCommit.append("\n");
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            //hashed the contents of index, put it in file with name of hash
-            String thisIsTheTreeFileHash = encryptThisString(treeHashLineForCommit.toString());
-            File treeFile = new File("git/objects/" + thisIsTheTreeFileHash);
-            try (FileWriter writer = new FileWriter(treeFile, false)) {
-                writer.write(treeHashLineForCommit.toString());
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return thisIsTheTreeFileHash;
-        } else {
+        if(!parentLine.equals("")){
             //go parent commit, get contents of THAT tree, add the junk of index in, then make file with name of hashed everything.
             try(BufferedReader reader = new BufferedReader(new FileReader("git/objects/" + parentLine))) { //need to go into this ones tree
                 String getTheTreeOfParent = "";
@@ -195,26 +182,26 @@ public class Git implements GitInterface{
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            //same functionality as if this was the first commit
-            try(BufferedReader reader = new BufferedReader(new FileReader("git/index"))) {
-                String oneIndexLine;
-                while((oneIndexLine = reader.readLine()) != null) {
-                    treeHashLineForCommit.append(oneIndexLine);
-                    treeHashLineForCommit.append("\n");
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            String thisIsTheTreeFileHash = encryptThisString(treeHashLineForCommit.toString());
-            File treeFile = new File("git/objects/" + thisIsTheTreeFileHash);
-            try (FileWriter writer = new FileWriter(treeFile, false)) {
-                writer.write(treeHashLineForCommit.toString());
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return thisIsTheTreeFileHash;
         }
+        try(BufferedReader reader = new BufferedReader(new FileReader("git/index"))) {
+            String oneIndexLine;
+            while((oneIndexLine = reader.readLine()) != null) {
+                treeHashLineForCommit.append(oneIndexLine);
+                treeHashLineForCommit.append("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //hashed the contents of index, put it in file with name of hash
+        String thisIsTheTreeFileHash = encryptThisString(treeHashLineForCommit.toString());
+        File treeFile = new File("git/objects/" + thisIsTheTreeFileHash);
+        try (FileWriter writer = new FileWriter(treeFile, false)) {
+            writer.write(treeHashLineForCommit.toString());
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return thisIsTheTreeFileHash;
     }
     
     public static void initializesGitRepo ()
