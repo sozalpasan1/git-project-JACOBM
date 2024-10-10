@@ -12,6 +12,8 @@ import java.util.zip.ZipOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 //added a sigma comment
 public class Git implements GitInterface{
     public static void main (String [] args) throws IOException
@@ -50,6 +52,9 @@ public class Git implements GitInterface{
         // createBlob("test.txt", COMPRESS);
         repo.stage("testDir");
         //add scanner for author and message before doing commit
+        
+       
+        // System.out.println(formattedDate);
 
 
     }
@@ -67,19 +72,55 @@ public class Git implements GitInterface{
 
     public String commit(String author, String message){
         StringBuilder commitFileContents = new StringBuilder();
+        
+
+        
+        
         try (BufferedReader reader = new BufferedReader(new FileReader("git/HEAD"))) {
             String line;
             if((line = reader.readLine()) != null) {
-                commitFileContents.append(line);
+                commitFileContents.append("parent: " + line);
+                commitFileContents.append("\n");
                 reader.close();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        
+        //add author
+        commitFileContents.append("author: " + author);
+        commitFileContents.append("\n");
 
-        return null;
+        //add date
+        LocalDate currentDate = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d, yyyy");
+        String formattedDate = currentDate.format(formatter);
+        commitFileContents.append("date: " + formattedDate);
+        commitFileContents.append("\n");
+
+        //add message
+        commitFileContents.append("message: " + message);
+
+        //hash everything we just did, make the commitFile, and write in the commitFile
+        String hashOfCommitFile = encryptThisString(commitFileContents.toString());
+        File commitFile = new File("git/objects/" + hashOfCommitFile);
+        try (FileWriter writer = new FileWriter(commitFile, false)){
+            writer.write(commitFileContents.toString());
+            writer.close();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+
+        //update head to have the correct thing
+        try (FileWriter writer = new FileWriter("git/HEAD", false)){
+            writer.write(hashOfCommitFile);
+            writer.close();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+
+
+        return hashOfCommitFile;
     }
 
     public void checkout(String commitHash){
