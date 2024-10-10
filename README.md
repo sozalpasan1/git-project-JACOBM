@@ -4,6 +4,7 @@
 
 2.  Did you code commit() / how well does it work?
     Yes, works well.
+
 3. Did you do checkout / how well does it work?
 
 4. What bugs did find / which of em did you fix?
