@@ -121,7 +121,8 @@ public class Git implements GitInterface{
     }
 
     public void checkout(String commitHash){
-        
+        //change head to be the parameter
+        //then have to update owrking directory to be identical to the specificed hash
     }
 
     //go to previous commit, get the tree hash, go to that file in objects, append everythign into treeHashLineForCommit, then append
