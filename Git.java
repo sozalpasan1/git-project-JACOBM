@@ -18,19 +18,31 @@ import java.time.format.DateTimeFormatter;
 public class Git implements GitInterface{
     public static void main (String [] args) throws IOException
     {
-        File file = new File("doNotPayThisAnyAttention");
+        File file = new File("doNotPayThisAnyAttention"); //added this so line saying not used goes away
         checkForAndDelete(file);
+        
+        /*
+         * !!! Super important
+         * to test:
+         * 1) manually make a working directory, add whatever files or folders you want
+         * 2) initialize git repo
+         * 3) first stage README.md
+         * 4) stage any file/folder you want. You can stage as many things as you want, then commit.
+         * 5) commit --> committing twice should will j make another commmit file thats tree is already existing
+         */
+
         
         Git repo = new Git();
         initializesGitRepo();
-
+        
+        repo.stage("README.md");    
         repo.commit("sean", "first sigma");
 
         repo.stage("testDir");
         repo.commit("sean", "sigma");
 
         repo.stage("test.txt");
-        System.out.println(repo.commit("sean", "test.txt"));
+        System.out.println(repo.commit("sean", "test"));
 
     }
 
@@ -48,11 +60,12 @@ public class Git implements GitInterface{
     public String commit(String author, String message){
         StringBuilder commitFileContents = new StringBuilder();
         
+        //first get the tree line
         String treeHashLineForCommit = makeTreeHashLineForCommit();
         commitFileContents.append("tree: " + treeHashLineForCommit);
         commitFileContents.append("\n");
 
-
+        //then get the parent line
         String parentLine = "";
         try(BufferedReader reader = new BufferedReader(new FileReader("git/HEAD"))) {
             String line;
@@ -96,6 +109,8 @@ public class Git implements GitInterface{
         } catch (IOException e){
             e.printStackTrace();
         }
+
+        //wipe index to get ready for next stage
         try (FileWriter writer = new FileWriter("git/index", false)){
             writer.close();
         } catch (IOException e){
@@ -111,9 +126,8 @@ public class Git implements GitInterface{
 
     //go to previous commit, get the tree hash, go to that file in objects, append everythign into treeHashLineForCommit, then append
     //whats currently in index, hash that, put all the junk into a file that has the name of the hash, then return the hash
-
     public String makeTreeHashLineForCommit(){
-        StringBuilder treeHashLineForCommit = new StringBuilder();
+        //below gets us the hash of head file
         String parentLine = "";
         try(BufferedReader reader = new BufferedReader(new FileReader("git/HEAD"))) {
             String line;
@@ -125,7 +139,11 @@ public class Git implements GitInterface{
             e.printStackTrace();
         }
        
+        //BELOW
+        //if statement --> if head empty, just hash index, else go to previous commits tree and continute
+        StringBuilder treeHashLineForCommit = new StringBuilder();
         if(parentLine.equals("")){ //that means this is the first commit
+            //got everything from index
             try(BufferedReader reader = new BufferedReader(new FileReader("git/index"))) {
                 String oneIndexLine;
                 while((oneIndexLine = reader.readLine()) != null) {
@@ -135,6 +153,7 @@ public class Git implements GitInterface{
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            //hashed the contents of index, put it in file with name of hash
             String thisIsTheTreeFileHash = encryptThisString(treeHashLineForCommit.toString());
             File treeFile = new File("git/objects/" + thisIsTheTreeFileHash);
             try (FileWriter writer = new FileWriter(treeFile, false)) {
@@ -145,6 +164,7 @@ public class Git implements GitInterface{
             }
             return thisIsTheTreeFileHash;
         } else {
+            //go parent commit, get contents of THAT tree, add the junk of index in, then make file with name of hashed everything.
             try(BufferedReader reader = new BufferedReader(new FileReader("git/objects/" + parentLine))) { //need to go into this ones tree
                 String getTheTreeOfParent = "";
                 getTheTreeOfParent = reader.readLine();
@@ -159,6 +179,7 @@ public class Git implements GitInterface{
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            //same functionality as if this was the first commit
             try(BufferedReader reader = new BufferedReader(new FileReader("git/index"))) {
                 String oneIndexLine;
                 while((oneIndexLine = reader.readLine()) != null) {
@@ -182,8 +203,6 @@ public class Git implements GitInterface{
     
     public static void initializesGitRepo ()
     {
-        //create gitDirectory
-        
         if (!gitDirectory.exists()) 
         {
             gitDirectory.mkdir();
