@@ -57,7 +57,7 @@ public class Git implements GitInterface{
         repo.commit("sean", "test.txt");
 
         repo.stage("sigma.txt");
-        repo.commit("sean", "sigma.txt");
+        System.out.println(repo.commit("sean", "sigma.txt"));
 
 
     }
