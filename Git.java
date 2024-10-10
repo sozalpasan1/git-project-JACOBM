@@ -16,6 +16,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 //added a sigma comment
 public class Git implements GitInterface{
+    public static String workingDirectoryName;
     public static void main (String [] args) throws IOException
     {
         File file = new File("doNotPayThisAnyAttention"); //added this so line saying not used goes away
@@ -28,23 +29,24 @@ public class Git implements GitInterface{
          * 2) initialize git repo
          * 3) first stage README.md
          * 4) stage any file/folder you want. You can stage as many things as you want, then commit.
-         * 4.5) when staging, the pathway is "workingdirectory/__whateverfileorfolder__"
+         * 4.5) when staging, the pathway is .stage(workingdirectoryName + "/__whateverfileorfolder__")
          * 5) commit --> committing twice should will j make another commmit file thats tree is already existing
          * 
          * 
          */
 
         
+        workingDirectoryName = "wordir"; //!!! create your working director and type in its name here
         Git repo = new Git();
         initializesGitRepo();
         
         repo.stage("README.md");    
         repo.commit("sean", "first sigma");
 
-        repo.stage("wordir/testDir");
+        repo.stage(workingDirectoryName + "/testDir");
         repo.commit("sean", "test");
 
-        repo.stage("wordir/test.txt");
+        repo.stage(workingDirectoryName + "/test.txt");
         repo.commit("sean", "test");
 
     }
@@ -132,7 +134,8 @@ public class Git implements GitInterface{
             e.printStackTrace();
         }
 
-        
+        //go into commitHash, get the tree file
+        //using treeFile, delete everything thats NOT in the tree
 
         
         //then have to update owrking directory to be identical to the specificed hash
