@@ -51,8 +51,6 @@ public class Git implements GitInterface{
         // createBlob("testDir", COMPRESS);
         // createBlob("test.txt", COMPRESS);
         repo.stage("testDir");
-
-        //add scanner for author and message before doing commit
         repo.commit("sean", "sigma");
 
         repo.stage("test.txt");
@@ -83,10 +81,11 @@ public class Git implements GitInterface{
         commitFileContents.append("\n");
 
 
-        try(BufferedReader reader = new BufferedReader(new FileReader("git/HEAD"));) {
-            String parentLine = "";
-            while((reader.readLine()) != null) {
-                parentLine = reader.readLine();
+        String parentLine = "";
+        try(BufferedReader reader = new BufferedReader(new FileReader("git/HEAD"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                parentLine = line;
             }
             commitFileContents.append("parent: " + parentLine);
             commitFileContents.append("\n");
@@ -180,7 +179,7 @@ public class Git implements GitInterface{
                 getTheTreeOfParent = getTheTreeOfParent.substring(6);
                 try(BufferedReader treeReader = new BufferedReader(new FileReader("git/objects/" + getTheTreeOfParent))){
                     String oneTreeOfParentLine;
-                    while((oneTreeOfParentLine = reader.readLine()) != null) {
+                    while((oneTreeOfParentLine = treeReader.readLine()) != null) {
                         treeHashLineForCommit.append(oneTreeOfParentLine);
                         treeHashLineForCommit.append("\n");
                     }
