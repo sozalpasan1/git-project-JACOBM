@@ -14,6 +14,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 //added a sigma comment
 public class Git implements GitInterface{
     public static String workingDirectoryName;
@@ -37,17 +38,20 @@ public class Git implements GitInterface{
 
         
         workingDirectoryName = "wordir"; //!!! create your working director and type its name here
-        Git repo = new Git();
-        initializesGitRepo();
         
-        repo.stage("README.md");    
-        repo.commit("sean", "first sigma");
+        Git repo = new Git();
+
+        //repo.makeFiles();
+        initializesGitRepo();
+
 
         repo.stage(workingDirectoryName + "/testDir");
-        repo.commit("sean", "test");
+        System.out.println(repo.commit("sean", "test"));
 
         repo.stage(workingDirectoryName + "/test.txt");
-        repo.commit("sean", "test");
+        System.out.println(repo.commit("no", "yes"));
+
+        //repo.checkout("b0a4a6b885efc892c9cccc09a3fffc21d7aa6cdf");
 
     }
 
@@ -141,12 +145,29 @@ public class Git implements GitInterface{
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
-        
-        //using treeFile, delete everything thats NOT in the tree <-- this only works if we checkout backwards only
+
+        ArrayList<String> filesInTree = new ArrayList<String>();
+        try(BufferedReader reader = new BufferedReader(new FileReader("git/objects/" + getTheTreeOfParent))) {
+            String oneLineFromTreeFile;
+            while((oneLineFromTreeFile = reader.readLine()) != null){
+                oneLineFromTreeFile = oneLineFromTreeFile.substring(46);
+                filesInTree.add(oneLineFromTreeFile);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        File[] workingDirectory = new File(workingDirectoryName).listFiles();
+        for(File fileName : workingDirectory){
+            if(!filesInTree.contains(fileName.getPath())){
+                fileName.delete();
+            }
+        }
 
         
-        //then have to update owrking directory to be identical to the specificed hash
+        //using treeFile, delete everything thats NOT in the tree <-- this only works if we checkout to previous commits only
+        //instrucs not really specific so im just gonna assume if we want to checkout it will be us going backwards only
+        //so just delete everything thats not in the tree file
     }
 
     //go to previous commit, get the tree hash, go to that file in objects, append everythign into treeHashLineForCommit, then append
@@ -476,6 +497,38 @@ public class Git implements GitInterface{
         zos.closeEntry();
         zos.close();
         return baos.toByteArray();
+    }
+
+    public void makeFiles(){
+        try{
+            File testFile = new File("test.txt");
+            checkForAndDelete(testFile);
+            testFile.createNewFile();
+            File testDir = new File("testDir");
+            checkForAndDelete(testDir);
+            testDir.mkdir();
+            File dirInsideDir = new File("testDir/dirInsideDir");
+            checkForAndDelete(dirInsideDir);
+            dirInsideDir.mkdir();
+            File testFileInDir = new File("testDir/test2.txt");
+            checkForAndDelete(testFileInDir);
+            testFileInDir.createNewFile();
+            File lastFile = new File("testDir/dirInsideDir/theLastFile.txt");
+            checkForAndDelete(lastFile);
+            lastFile.createNewFile();
+
+            FileWriter writer = new FileWriter("test.txt");
+            writer.write("this is the first test");
+            writer.close();
+            FileWriter writerInDir = new FileWriter("testDir/test2.txt");
+            writerInDir.write("this is the second test");
+            writerInDir.close();
+            FileWriter lastWriter = new FileWriter("testDir/dirInsideDir/theLastFile.txt");
+            lastWriter.write("hopefully this works");
+            lastWriter.close();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
     }
 
 }
