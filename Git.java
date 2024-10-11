@@ -41,7 +41,7 @@ public class Git implements GitInterface{
         
         Git repo = new Git();
 
-        //repo.makeFiles();
+        repo.makeFiles();
         initializesGitRepo();
 
 
@@ -501,29 +501,32 @@ public class Git implements GitInterface{
 
     public void makeFiles(){
         try{
-            File testFile = new File("test.txt");
+            File workDir = new File(workingDirectoryName);
+            checkForAndDelete(workDir);
+            workDir.mkdir();
+            File testFile = new File(workingDirectoryName + "/test.txt");
             checkForAndDelete(testFile);
             testFile.createNewFile();
-            File testDir = new File("testDir");
+            File testDir = new File(workingDirectoryName + "/testDir");
             checkForAndDelete(testDir);
             testDir.mkdir();
-            File dirInsideDir = new File("testDir/dirInsideDir");
+            File dirInsideDir = new File(workingDirectoryName + "/testDir/dirInsideDir");
             checkForAndDelete(dirInsideDir);
             dirInsideDir.mkdir();
-            File testFileInDir = new File("testDir/test2.txt");
+            File testFileInDir = new File(workingDirectoryName + "/testDir/test2.txt");
             checkForAndDelete(testFileInDir);
             testFileInDir.createNewFile();
-            File lastFile = new File("testDir/dirInsideDir/theLastFile.txt");
+            File lastFile = new File(workingDirectoryName + "/testDir/dirInsideDir/theLastFile.txt");
             checkForAndDelete(lastFile);
             lastFile.createNewFile();
 
-            FileWriter writer = new FileWriter("test.txt");
+            FileWriter writer = new FileWriter(workingDirectoryName + "/test.txt");
             writer.write("this is the first test");
             writer.close();
-            FileWriter writerInDir = new FileWriter("testDir/test2.txt");
+            FileWriter writerInDir = new FileWriter(workingDirectoryName + "/testDir/test2.txt");
             writerInDir.write("this is the second test");
             writerInDir.close();
-            FileWriter lastWriter = new FileWriter("testDir/dirInsideDir/theLastFile.txt");
+            FileWriter lastWriter = new FileWriter(workingDirectoryName + "/testDir/dirInsideDir/theLastFile.txt");
             lastWriter.write("hopefully this works");
             lastWriter.close();
         } catch (IOException e){
