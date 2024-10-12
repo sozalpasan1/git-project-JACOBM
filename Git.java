@@ -45,19 +45,24 @@ public class Git implements GitInterface{
         
         Git repo = new Git();
 
-        repo.makeFiles();
-        initializesGitRepo();
+        // repo.makeFiles();
+        // initializesGitRepo();
 
-        repo.stage(workingDirectoryName + "/test.txt");
-        repo.commit("sean", "test");
+        // repo.stage(workingDirectoryName + "/deez");
+        // repo.commit("sigma", "please");
 
-        repo.stage(workingDirectoryName + "/testDir");
-        repo.commit("no", "yes");
+        // repo.stage(workingDirectoryName + "/testDir");
+        // repo.commit("no", "yes");
 
-        repo.stage(workingDirectoryName + "/deez");
-        repo.commit("sigma", "please");
+        // repo.stage(workingDirectoryName + "/test.txt");
+        // repo.commit("sean", "test");
 
-        // repo.checkout("530b4fad3b9552579f3efe29286b0a110309c34d");
+
+        //repo.checkout("d511133715b379b1821eb3f374c88f7d5376500e");
+
+        //repo.checkout("1784fb168351a4056dd032f5e4b3469563c72bc7");
+        
+        repo.checkout("a5729c5437bff65593d95ae98dd0f43fdcffee4f");
     }
 
     private static File gitDirectory = new File("git");
@@ -135,7 +140,7 @@ public class Git implements GitInterface{
     }
 
     //this only works if ur checkingout backwards
-    public void checkout(String commitHash){
+    public void checkout(String commitHash) {
         //change head to be the parameter
         try (FileWriter writer = new FileWriter("git/HEAD", false)){
             writer.write(commitHash);
@@ -144,43 +149,57 @@ public class Git implements GitInterface{
             e.printStackTrace();
         }
         //go into commitHash, get the tree hash
-        String getTheTreeOfParent = "";
+        String getTheTreeOfThatCommit = "";
         try(BufferedReader reader = new BufferedReader(new FileReader("git/objects/" + commitHash))) {
-            getTheTreeOfParent = reader.readLine();
-            getTheTreeOfParent = getTheTreeOfParent.substring(6);
+            getTheTreeOfThatCommit = reader.readLine();
+            getTheTreeOfThatCommit = getTheTreeOfThatCommit.substring(6);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        //everythign above this comment works correctly
-
-
+        
+        //the chunk below goes into tree file and adds all file names to an arraylist
         ArrayList<String> filesInTree = new ArrayList<String>();
-        try(BufferedReader reader = new BufferedReader(new FileReader("git/objects/" + getTheTreeOfParent))) {
+        try(BufferedReader reader = new BufferedReader(new FileReader("git/objects/" + getTheTreeOfThatCommit))) {
             String oneLineFromTreeFile;
             while((oneLineFromTreeFile = reader.readLine()) != null){
-                oneLineFromTreeFile = oneLineFromTreeFile.substring(46);
+                //oneLineFromTreeFile = oneLineFromTreeFile.substring(46);
+                System.out.println(oneLineFromTreeFile);
                 filesInTree.add(oneLineFromTreeFile);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        File workDir = new File(workingDirectoryName);
+        deleteEverything(workDir);
 
-        File[] workingDirectory = new File(workingDirectoryName).listFiles();
-        for(File fileName : workingDirectory){
-            if(!filesInTree.contains(fileName.getPath())){
-                if(fileName.isDirectory()){
-                    deleteEverything(fileName);
-                } else {
-                    fileName.delete();
+        //the below for loop checks if first thing in array is tree or file
+        //if tree create the dir
+        //if file, create file, copy paste contents from objects using the hash, then ur done
+        //we utiilze the fact that tree files are always written after the blob files given a directory
+        for(int i = filesInTree.size()-1; i>=0; i--){
+            if(filesInTree.get(i).contains("tree")){
+                String fileName =  filesInTree.get(i).substring(46);
+                File tree = new File(fileName);
+                tree.mkdirs();
+            } else {
+                String hashOfLine = filesInTree.get(i).substring(5,45);
+                String nameOfFile = filesInTree.get(i).substring(46);
+                File file = new File(nameOfFile);
+                try (BufferedReader reader = new BufferedReader(new FileReader("git/objects/" + hashOfLine)); FileWriter writer = new FileWriter(file, false)){
+                    file.createNewFile();
+                    String line = "";
+                    while((line = reader.readLine()) != null){
+                        writer.write(line);
+                    }
+                } catch (IOException e){
+                    e.printStackTrace();
                 }
+                //were first gonna create the file, then go into the hash, copy the contents, paste them in the file then we should be done
             }
         }
-
-        
-        //using treeFile, delete everything thats NOT in the tree <-- this only works if we checkout to previous commits only
-        //instrucs not really specific so im just gonna assume if we want to checkout it will be us going backwards only
-        //so just delete everything thats not in the tree file
     }
+
+    //deletes everything except parameter
     public void deleteEverything(File file){
         for(File childFile : file.listFiles()){
             if(childFile.isDirectory()){
@@ -188,7 +207,7 @@ public class Git implements GitInterface{
             }
             childFile.delete();
         }
-        file.delete();
+        //file.delete();
     }
 
     //go to previous commit, get the tree hash, go to that file in objects, append everythign into treeHashLineForCommit, then append
