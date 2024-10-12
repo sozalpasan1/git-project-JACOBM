@@ -134,6 +134,7 @@ public class Git implements GitInterface{
         return hashOfCommitFile;
     }
 
+    //this only works if ur checkingout backwards
     public void checkout(String commitHash){
         //change head to be the parameter
         try (FileWriter writer = new FileWriter("git/HEAD", false)){
