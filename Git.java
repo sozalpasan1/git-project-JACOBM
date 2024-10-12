@@ -45,24 +45,22 @@ public class Git implements GitInterface{
         
         Git repo = new Git();
 
-        //repo.makeFiles();
-        // initializesGitRepo();
+        repo.makeFiles();
+        initializesGitRepo();
 
-        // repo.stage(workingDirectoryName + "/deez");
-        // repo.commit("sigma", "please");
+        repo.stage(workingDirectoryName + "/deez");
+        repo.commit("sigma", "please");
 
-        // repo.stage(workingDirectoryName + "/testDir");
-        // repo.commit("no", "yes");
+        repo.stage(workingDirectoryName + "/testDir");
+        repo.commit("no", "yes");
 
-        // repo.stage(workingDirectoryName + "/test.txt");
-        // repo.commit("sean", "test");
+        repo.stage(workingDirectoryName + "/test.txt");
+        repo.commit("sean", "test");
 
 
-        repo.checkout("a865b7ae0b24da2dae060722321a67fa3f84ec92");
+        //repo.checkout("");
 
-        //repo.checkout("a5729c5437bff65593d95ae98dd0f43fdcffee4f");
-        
-        //repo.checkout("1784fb168351a4056dd032f5e4b3469563c72bc7");
+        //repo.checkout("");
     }
 
     private static File gitDirectory = new File("git");
