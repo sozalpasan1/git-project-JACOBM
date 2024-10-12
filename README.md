@@ -12,7 +12,7 @@
 <br/>
 
 3. Did you do checkout / how well does it work? <br/>
-
+    Yes, works well.
 
 <br/>
 <br/>
