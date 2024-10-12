@@ -45,23 +45,19 @@ public class Git implements GitInterface{
         
         Git repo = new Git();
 
-        //repo.makeFiles();
-        // initializesGitRepo();
+        repo.makeFiles();
+        initializesGitRepo();
 
+        repo.stage(workingDirectoryName + "/test.txt");
+        repo.commit("sean", "test");
 
-        // repo.stage(workingDirectoryName + "/test.txt");
-        // repo.commit("sean", "test");
+        repo.stage(workingDirectoryName + "/testDir");
+        repo.commit("no", "yes");
 
-        // repo.stage(workingDirectoryName + "/testDir");
-        // repo.commit("no", "yes");
+        repo.stage(workingDirectoryName + "/deez");
+        repo.commit("sigma", "please");
 
-        // repo.stage(workingDirectoryName + "/deez");
-        // repo.commit("sigma", "please");
-
-        // repo.stage(workingDirectoryName + "/winterarc.txt");
-        // repo.commit("arcwinter", "are you for real");
-
-        repo.checkout("ed19ca0b58d65b765a2be681904828a6d69fcda4");
+        // repo.checkout("530b4fad3b9552579f3efe29286b0a110309c34d");
     }
 
     private static File gitDirectory = new File("git");
@@ -543,6 +539,15 @@ public class Git implements GitInterface{
             File lastFile = new File(workingDirectoryName + "/testDir/dirInsideDir/theLastFile.txt");
             checkForAndDelete(lastFile);
             lastFile.createNewFile();
+            File deezDir = new File(workingDirectoryName + "/deez");
+            checkForAndDelete(deezDir);
+            deezDir.mkdir();
+            File deezDirFile = new File(workingDirectoryName + "/deez/simga.txt");
+            checkForAndDelete(deezDirFile);
+            deezDir.createNewFile();
+            File deezDirFile2 = new File(workingDirectoryName + "/deez/fortnite.txt");
+            checkForAndDelete(deezDirFile2);
+            deezDir.createNewFile();
 
             FileWriter writer = new FileWriter(workingDirectoryName + "/test.txt");
             writer.write("this is the first test");
@@ -553,6 +558,14 @@ public class Git implements GitInterface{
             FileWriter lastWriter = new FileWriter(workingDirectoryName + "/testDir/dirInsideDir/theLastFile.txt");
             lastWriter.write("hopefully this works");
             lastWriter.close();
+
+            FileWriter deezsimga = new FileWriter(workingDirectoryName + "/deez/simga.txt");
+            deezsimga.write("deez sigma . fortnite");
+            deezsimga.close();
+
+            FileWriter hi = new FileWriter(workingDirectoryName + "/deez/fortnite.txt");
+            hi.write("transformers is better than pirates of the carribiean");
+            hi.close();
         } catch (IOException e){
             e.printStackTrace();
         }
