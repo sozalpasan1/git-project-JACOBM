@@ -194,7 +194,6 @@ public class Git implements GitInterface{
                 } catch (IOException e){
                     e.printStackTrace();
                 }
-                //were first gonna create the file, then go into the hash, copy the contents, paste them in the file then we should be done
             }
         }
     }
@@ -207,7 +206,6 @@ public class Git implements GitInterface{
             }
             childFile.delete();
         }
-        //file.delete();
     }
 
     //go to previous commit, get the tree hash, go to that file in objects, append everythign into treeHashLineForCommit, then append
