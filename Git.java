@@ -28,11 +28,15 @@ public class Git implements GitInterface{
          * to test:
          * 1) manually make a working directory, add whatever files or folders you want inside of it
          * 2) initialize git repo
-         * 3) first stage README.md
-         * 4) stage any file/folder you want. You can stage as many things as you want, then commit.
-         * 4.5) when staging, the pathway is .stage(workingdirectoryName + "/__whateverfileorfolder__")
-         * 5) commit --> committing twice should will j make another commmit file thats tree is already existing
+         * 3) stage any file/folder you want. You can stage as many things as you want, then commit.
+         * 3.5) when staging, the pathway is .stage(workingdirectoryName + "/__whateverfileorfolder__")
+         * 4) commit --> committing twice will j make another commmit file thats tree is already existing
          * 
+         * for testing checkout, i recommend making all the files you want, staging and commiting them then stopping there
+         * then go to head, find the commit file and go as far back as you want to check out
+         * then comment out all the file creation / staging / commit stuff, and only have 
+         *                      repo.checkout(hash)
+         * then you checkout and the working directory should be all good 
          * 
          */
 
@@ -41,18 +45,23 @@ public class Git implements GitInterface{
         
         Git repo = new Git();
 
-        repo.makeFiles();
-        initializesGitRepo();
+        //repo.makeFiles();
+        // initializesGitRepo();
 
 
-        repo.stage(workingDirectoryName + "/testDir");
-        System.out.println(repo.commit("sean", "test"));
+        // repo.stage(workingDirectoryName + "/test.txt");
+        // repo.commit("sean", "test");
 
-        repo.stage(workingDirectoryName + "/test.txt");
-        System.out.println(repo.commit("no", "yes"));
+        // repo.stage(workingDirectoryName + "/testDir");
+        // repo.commit("no", "yes");
 
-        //repo.checkout("b0a4a6b885efc892c9cccc09a3fffc21d7aa6cdf");
+        // repo.stage(workingDirectoryName + "/deez");
+        // repo.commit("sigma", "please");
 
+        // repo.stage(workingDirectoryName + "/winterarc.txt");
+        // repo.commit("arcwinter", "are you for real");
+
+        repo.checkout("ed19ca0b58d65b765a2be681904828a6d69fcda4");
     }
 
     private static File gitDirectory = new File("git");
@@ -145,6 +154,8 @@ public class Git implements GitInterface{
         } catch (IOException e) {
             e.printStackTrace();
         }
+        //everythign above this comment works correctly
+
 
         ArrayList<String> filesInTree = new ArrayList<String>();
         try(BufferedReader reader = new BufferedReader(new FileReader("git/objects/" + getTheTreeOfParent))) {
@@ -160,7 +171,11 @@ public class Git implements GitInterface{
         File[] workingDirectory = new File(workingDirectoryName).listFiles();
         for(File fileName : workingDirectory){
             if(!filesInTree.contains(fileName.getPath())){
-                fileName.delete();
+                if(fileName.isDirectory()){
+                    deleteEverything(fileName);
+                } else {
+                    fileName.delete();
+                }
             }
         }
 
@@ -168,6 +183,15 @@ public class Git implements GitInterface{
         //using treeFile, delete everything thats NOT in the tree <-- this only works if we checkout to previous commits only
         //instrucs not really specific so im just gonna assume if we want to checkout it will be us going backwards only
         //so just delete everything thats not in the tree file
+    }
+    public void deleteEverything(File file){
+        for(File childFile : file.listFiles()){
+            if(childFile.isDirectory()){
+                deleteEverything(childFile);
+            }
+            childFile.delete();
+        }
+        file.delete();
     }
 
     //go to previous commit, get the tree hash, go to that file in objects, append everythign into treeHashLineForCommit, then append
